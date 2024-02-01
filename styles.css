@@ -1,0 +1,64 @@
+/* General body styling */
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4; /* Adds a light background color */
+}
+
+/* Styling for the map container */
+#map {
+  width: 100%;
+  max-width: 960px; /* Adjust max-width as per your design */
+  height: 600px; /* Adjust height as needed */
+  margin: 20px auto; /* Centers your map on the page and adds vertical spacing */
+  position: relative; /* For absolute positioning of map elements */
+  background-color: #fff; /* Adds a background color to the map for contrast */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Adds a subtle shadow for depth */
+}
+
+#tooltip {
+  position: absolute;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  pointer-events: none; /* This makes the tooltip ignore mouse events, so it doesn't interfere with map interaction */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  z-index: 10; /* Ensures tooltip is above all map elements */
+}
+
+/* SVG Path styles for the states */
+.states path {
+  fill: #ccc; /* Light grey fill for the states */
+  stroke: #fff; /* White stroke for state borders */
+  stroke-width: 1; /* Adjusted stroke width for clearer borders */
+  stroke-linejoin: round; /* Smooths the corners of the state borders */
+  cursor: pointer; /* Indicates an interactive element */
+}
+
+/* State hover effect */
+.states path:hover {
+  fill: #aaa; /* Darker shade on hover for better visual feedback */
+}
+
+/* Details section styling */
+#details {
+  background-color: #fff; /* White background for clarity */
+  padding: 20px;
+  margin: 20px auto; /* Adds vertical spacing and centers the section */
+  max-width: 960px; /* Consistent with the map's max width */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Consistent shadow as the map */
+  border-radius: 5px; /* Softens the edges */
+  display: none; /* Initially hidden, can be shown via JS */
+}
+
+/* When details are available, adjust the layout */
+.details-available #details {
+  display: block; /* Show details section when content is available */
+}
+
+/* Optional: Add a transition for smoother state color changes on hover */
+.states path {
+  transition: fill 0.2s ease-in-out;
+}
