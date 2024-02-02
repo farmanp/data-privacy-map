@@ -30,7 +30,6 @@ body {
 
 /* SVG Path styles for the states */
 .states path {
-  fill: #ccc; /* Light grey fill for the states */
   stroke: #fff; /* White stroke for state borders */
   stroke-width: 1; /* Adjusted stroke width for clearer borders */
   stroke-linejoin: round; /* Smooths the corners of the state borders */
@@ -51,7 +50,48 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Consistent shadow as the map */
   border-radius: 5px; /* Softens the edges */
   display: none; /* Initially hidden, can be shown via JS */
+  overflow-y: auto; /* Allows scrolling within the details section */
+  max-height: 70vh; /* Limits the height to ensure it fits within most viewports */
 }
+
+#details h2 {
+  font-size: 1.5em;
+  margin-top: 0;
+}
+
+#details .law-card {
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+#details .law-card h3 {
+  font-size: 1.2em;
+  margin-top: 0;
+}
+
+#details .law-card p {
+  font-size: 1em;
+  color: #555;
+}
+
+#details .close-btn {
+  background-color: #ccc;
+  color: #333;
+  padding: 5px 10px;
+  font-size: 1em;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+
+#details .close-btn:hover {
+  background-color: #bbb;
+}
+
 
 /* When details are available, adjust the layout */
 .details-available #details {
@@ -61,4 +101,14 @@ body {
 /* Optional: Add a transition for smoother state color changes on hover */
 .states path {
   transition: fill 0.2s ease-in-out;
+}
+
+/* State hover effect */
+.states path:hover {
+  fill: #aaa; /* Darker shade for states without data privacy laws on hover */
+}
+
+/* Specific hover effect for states with data privacy laws */
+.states path[fill='#90ee90']:hover {
+  fill: #32cd32; /* Dark green on hover for states with laws */
 }

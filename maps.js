@@ -26,8 +26,8 @@ d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(function
     .enter()
     .append('path')
     .attr('d', path)
-    .attr('fill', function(d) {
-      var stateId = parseInt(d.id, 10);            
+    .attr('fill', function(d) {                
+      var stateId = parseInt(d, 10);
       return stateDataPrivacyLaws[stateId] ? '#90ee90' : '#ccc'; // Color states with laws in light green
     })
     .attr('stroke', '#fff')
