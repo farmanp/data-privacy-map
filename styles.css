@@ -36,11 +36,6 @@ body {
   cursor: pointer; /* Indicates an interactive element */
 }
 
-/* State hover effect */
-.states path:hover {
-  fill: #aaa; /* Darker shade on hover for better visual feedback */
-}
-
 /* Details section styling */
 #details {
   background-color: #fff; /* White background for clarity */
@@ -103,9 +98,8 @@ body {
   transition: fill 0.2s ease-in-out;
 }
 
-/* State hover effect */
 .states path:hover {
-  fill: #aaa; /* Darker shade for states without data privacy laws on hover */
+  filter: brightness(75%);
 }
 
 /* Specific hover effect for states with data privacy laws */

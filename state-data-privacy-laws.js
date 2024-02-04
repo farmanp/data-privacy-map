@@ -123,6 +123,8 @@ const stateDataPrivacyLaws = {
     recentSettlements: [
       {
         name: "Case 123: Data Misuse Sanction",
+        description:
+          "This is a placeholder for recent settlements, and specific details should be consulted for accurate and current information.",
       },
     ],
   },
