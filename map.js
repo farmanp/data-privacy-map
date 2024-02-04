@@ -1,102 +1,137 @@
-import { stateNames } from './state-names.js';
-import { stateDataPrivacyLaws } from './state-data-privacy-laws.js';
+import { stateNames } from "./state-names.js";
+import { stateDataPrivacyLaws } from "./state-data-privacy-laws.js";
 
-// Width and height for the SVG
-var width = 975;
-var height = 610;
+const width = 975,
+  height = 610;
+const LIGHT_GREEN = "#90ee90",
+  DARK_GREEN = "#008000",
+  GRAY = "#ccc";
 
-// Define SVG element
-var svg = d3.select('#map').append('svg')
-  .attr('viewBox', `0 0 ${width} ${height}`);
+const svg = d3
+  .select("#map")
+  .append("svg")
+  .attr("viewBox", `0 0 ${width} ${height}`);
 
-// Define projection and path generator
-var projection = d3.geoAlbersUsa().fitSize([width, height], {type: "Sphere"});
-var path = d3.geoPath().projection(projection);
+const projection = d3
+  .geoAlbersUsa()
+  .fitSize([width, height], { type: "Sphere" });
+const path = d3.geoPath().projection(projection);
 
-var tooltip = d3.select("#tooltip");
-var details = d3.select("#details");
+const tooltip = d3.select("#tooltip");
+const details = d3.select("#details");
 
-d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(function(us) {
-  var states = topojson.feature(us, us.objects.states).features;
+const maxScore = calculateMaxScore();
+const intensity = d3
+  .scaleLinear()
+  .domain([0, maxScore])
+  .range([LIGHT_GREEN, DARK_GREEN]);
 
-  svg.append('g')
-    .attr('class', 'states')
-    .selectAll('path')
+d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(
+  renderMap
+);
+
+function calculateMaxScore() {
+  return Object.values(stateDataPrivacyLaws).reduce(
+    (max, { laws, pendingLegislation, recentSettlements }) => {
+      const score =
+        laws.length * 3 +
+        pendingLegislation.length * 2 +
+        recentSettlements.length;
+      return Math.max(max, score);
+    },
+    0
+  );
+}
+
+function renderMap(us) {
+  const states = topojson.feature(us, us.objects.states).features;
+
+  svg
+    .append("g")
+    .attr("class", "states")
+    .selectAll("path")
     .data(states)
     .enter()
-    .append('path')
-    .attr('d', path)
-    .attr('fill', function(d) {
-      var stateId = parseInt(d.id, 10);            
-      return stateDataPrivacyLaws[stateId] ? '#90ee90' : '#ccc'; // Color states with laws in light green
-    })
-    .attr('stroke', '#fff')
-    .attr('stroke-width', 0.5)
-    .on('mouseover', function(event, d) {      
-      var stateId = parseInt(d, 10);;
-      console.log(stateId, stateNames[stateId])
-      var tooltipText = "Quick Info: " + (stateNames[stateId] || "Missing name");
-      
-      tooltip
-        .text(tooltipText)
-        .style("left", (event.pageX + 10) + "px")
-        .style("top", (event.pageY + 10) + "px")
-        .style("opacity", 1);
-    })
-    .on('mouseout', function(event, d) {
-      tooltip.style("opacity", 0);
-    })
-    .on('click', function(event, d) {
-      var stateId = parseInt(d, 10);
-      var stateInfo = stateDataPrivacyLaws[stateId];
-  
-      // If there's no info for the state, display a default message
-      if (!stateInfo) {
-        details.html('<p>No detailed information available for this state.</p>')
-          .style("display", "block");
-        return;
-      }
-  
-      // Build the details HTML content
-      var detailsHtml = `<h2>${stateInfo.name}</h2>`;
-  
-      // Add laws in effect
-      if (stateInfo.laws.length > 0) {
-        detailsHtml += `<div><strong>Laws in Effect:</strong><ul>`;
-        stateInfo.laws.forEach(law => {
-          detailsHtml += `<li>${law}</li>`;
-        });
-        detailsHtml += `</ul></div>`;
-      }
-  
-      // Add pending legislation
-      if (stateInfo.pendingLegislation.length > 0) {
-        detailsHtml += `<div><strong>Pending Legislation:</strong><ul>`;
-        stateInfo.pendingLegislation.forEach(bill => {
-          detailsHtml += `<li>${bill}</li>`;
-        });
-        detailsHtml += `</ul></div>`;
-      }
-  
-      // Add recent settlements
-      if (stateInfo.recentSettlements.length > 0) {
-        detailsHtml += `<div><strong>Recent Settlements:</strong><ul>`;
-        stateInfo.recentSettlements.forEach(settlement => {
-          detailsHtml += `<li>${settlement}</li>`;
-        });
-        detailsHtml += `</ul></div>`;
-      }
-  
-      // Add a close button to hide the details section
-      detailsHtml += `<button class="close-btn" id="closeDetails">Close</button>`;
-  
-      // Set the inner HTML of the details div
-      details.html(detailsHtml).style("display", "block");
-      details.select("#closeDetails").on("click", function() {
-      details.style("display", "none");    
-      });
-  
-      // Scroll to the details section
-      details.node().scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
-});
+    .append("path")
+    .attr("d", path)
+    .attr("fill", (d) => getStateFillColor(d.id))
+    .attr("stroke", "#fff")
+    .attr("stroke-width", 0.5)
+    .on("mouseover", handleMouseOver)
+    .on("mouseout", () => tooltip.style("opacity", 0))
+    .on("click", handleClick);
+}
+
+function getStateFillColor(stateId) {
+  const stateData = stateDataPrivacyLaws[parseInt(stateId)];
+  if (!stateData) return GRAY;
+
+  const score =
+    stateData.laws.length * 3 +
+    stateData.pendingLegislation.length * 2 +
+    stateData.recentSettlements.length;
+  return intensity(score);
+}
+
+function handleMouseOver(event, d) {
+  const stateId = d.toString();
+  const stateData = stateDataPrivacyLaws[stateId] || {};
+  const {
+    laws = [],
+    pendingLegislation = [],
+    recentSettlements = [],
+  } = stateData;
+  const tooltipText = `Quick Info: ${
+    stateNames[stateId] || "Missing name"
+  }<br>Laws in Effect: ${laws.length}<br>Pending Legislation: ${
+    pendingLegislation.length
+  }<br>Recent Settlements: ${recentSettlements.length}`;
+
+  tooltip
+    .html(tooltipText)
+    .style("left", `${event.pageX + 10}px`)
+    .style("top", `${event.pageY + 10}px`)
+    .style("opacity", 1);
+}
+
+function handleClick(event, d) {
+  const stateId = d.toString();
+  const stateInfo = stateDataPrivacyLaws[stateId];
+  const detailsHtml = stateInfo
+    ? buildDetailsHtml(stateInfo)
+    : "<p>No detailed information available for this state.</p>";
+  displayDetails(detailsHtml);
+}
+
+function buildDetailsHtml({
+  name,
+  laws,
+  pendingLegislation,
+  recentSettlements,
+}) {
+  let html = `<h2>${name}</h2>`;
+  html += buildListHtml("Laws in Effect", laws);
+  html += buildListHtml("Pending Legislation", pendingLegislation);
+  html += buildListHtml("Recent Settlements", recentSettlements);
+  html += `<button class="close-btn" id="closeDetails">Close</button>`;
+  return html;
+}
+
+function buildListHtml(title, items) {
+  if (items.length === 0) return "";
+  const listItems = items
+    .map(
+      (item) =>
+        `<li><a href="${item.link}" target="_blank">${item.name}</a>: ${item.description}</li>`
+    )
+    .join("");
+  return `<div><strong>${title}:</strong><ul>${listItems}</ul></div>`;
+}
+
+function displayDetails(html) {
+  details.html(html).style("display", "block");
+  details
+    .select("#closeDetails")
+    .on("click", () => details.style("display", "none"));
+  details.node().scrollIntoView({ behavior: "smooth", block: "start" });
+}
