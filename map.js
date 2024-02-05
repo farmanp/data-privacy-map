@@ -1,6 +1,8 @@
 import { stateNames } from "./state-names.js";
 import { stateDataPrivacyLaws } from "./state-data-privacy-laws.js";
 
+const US_STATE_MAP_JSON =
+  "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
 const width = 975,
   height = 610;
 const LIGHT_GREEN = "#90ee90",
@@ -26,9 +28,7 @@ const intensity = d3
   .domain([0, maxScore])
   .range([LIGHT_GREEN, DARK_GREEN]);
 
-d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(
-  renderMap
-);
+d3.json(US_STATE_MAP_JSON).then(renderMap);
 
 function calculateMaxScore() {
   return Object.values(stateDataPrivacyLaws).reduce(
