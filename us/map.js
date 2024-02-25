@@ -1,24 +1,21 @@
-import { stateNames } from "./state-names.js";
-import { stateDataPrivacyLaws } from "./state-data-privacy-laws.js";
-
-const US_STATE_MAP_JSON =
-  "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
-const width = 975,
-  height = 610;
-const LIGHT_GREEN = "#90ee90",
-  DARK_GREEN = "#008000",
-  GRAY = "#ccc";
+import { getStateDataPrivacyLaws, getStateNames } from "./data.js";
+import {
+  US_STATE_MAP_JSON,
+  width,
+  height,
+  LIGHT_GREEN,
+  DARK_GREEN,
+  GRAY,
+} from "../constants/constants.js";
 
 const svg = d3
   .select("#map")
   .append("svg")
   .attr("viewBox", `0 0 ${width} ${height}`);
-
 const projection = d3
   .geoAlbersUsa()
   .fitSize([width, height], { type: "Sphere" });
 const path = d3.geoPath().projection(projection);
-
 const tooltip = d3.select("#tooltip");
 const details = d3.select("#details");
 
@@ -28,10 +25,8 @@ const intensity = d3
   .domain([0, maxScore])
   .range([LIGHT_GREEN, DARK_GREEN]);
 
-d3.json(US_STATE_MAP_JSON).then(renderMap);
-
 function calculateMaxScore() {
-  return Object.values(stateDataPrivacyLaws).reduce(
+  return Object.values(getStateDataPrivacyLaws()).reduce(
     (max, { laws, pendingLegislation, recentSettlements }) => {
       const score =
         laws.length * 3 +
@@ -43,7 +38,20 @@ function calculateMaxScore() {
   );
 }
 
-function renderMap(us) {
+function getStateFillColor(stateId) {
+  const stateData = getStateDataPrivacyLaws()[parseInt(stateId)];
+  if (!stateData) return GRAY;
+
+  const score =
+    stateData.laws.length * 3 +
+    stateData.pendingLegislation.length * 2 +
+    stateData.recentSettlements.length;
+  return intensity(score);
+}
+
+d3.json(US_STATE_MAP_JSON).then(renderUnitedStatesMap);
+
+export function renderUnitedStatesMap(us) {
   const states = topojson.feature(us, us.objects.states).features;
 
   svg
@@ -62,20 +70,10 @@ function renderMap(us) {
     .on("click", handleClick);
 }
 
-function getStateFillColor(stateId) {
-  const stateData = stateDataPrivacyLaws[parseInt(stateId)];
-  if (!stateData) return GRAY;
-
-  const score =
-    stateData.laws.length * 3 +
-    stateData.pendingLegislation.length * 2 +
-    stateData.recentSettlements.length;
-  return intensity(score);
-}
-
 function handleMouseOver(event, d) {
+  const stateNames = getStateNames();
   const stateId = d.toString();
-  const stateData = stateDataPrivacyLaws[stateId] || {};
+  const stateData = getStateDataPrivacyLaws()[stateId] || {};
   const {
     laws = [],
     pendingLegislation = [],
@@ -96,7 +94,7 @@ function handleMouseOver(event, d) {
 
 function handleClick(event, d) {
   const stateId = d.toString();
-  const stateInfo = stateDataPrivacyLaws[stateId];
+  const stateInfo = getStateDataPrivacyLaws()[stateId];
   const detailsHtml = stateInfo
     ? buildDetailsHtml(stateInfo)
     : "<p>No detailed information available for this state.</p>";

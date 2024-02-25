@@ -1,4 +1,4 @@
-var stateNames = {
+const stateNames = {
   0: "Alabama",
   1: "Alaska",
   2: "Arizona",
